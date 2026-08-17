@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "HAMAUMIN"
+description = "A Kurdish-first personal AI assistant and modular agent workspace for conversations, projects, tasks, memory, tools, and customizable themes."
+version = "1.0.0"
+id = "artifacts/hamaumin"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18195
+
+[services.development]
+run = "pnpm --filter @workspace/hamaumin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hamaumin", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/hamaumin/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18195"
+BASE_PATH = "/"
