@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
-}
+export type DashboardStats = {
+  tasks: number;
+  projects: number;
+  memories: number;
+  tools: number;
+};

@@ -1,22 +1,27 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: HAMAUMIN Kurdish-first AI assistant API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: dashboard
+  - name: conversations
+  - name: tasks
+  - name: projects
+  - name: memory
+  - name: tools
+  - name: themes
+  - name: settings
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,614 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get the current user's dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [conversations]
+      summary: List conversations
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createConversation
+      tags: [conversations]
+      summary: Create a conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConversationInput"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+  /conversations/{conversationId}/messages:
+    get:
+      operationId: listMessages
+      tags: [conversations]
+      summary: List conversation messages
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Message"
+    post:
+      operationId: sendMessage
+      tags: [conversations]
+      summary: Send a message and receive a Kurdish Sorani response
+      parameters:
+        - $ref: "#/components/parameters/ConversationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "201":
+          description: Assistant response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagePair"
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List agent tasks
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create an agent task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /tasks/{taskId}:
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update task status or progress
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /tasks/{taskId}/retry:
+    post:
+      operationId: retryTask
+      tags: [tasks]
+      summary: Retry a failed task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: Retried task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /tasks/{taskId}/cancel:
+    post:
+      operationId: cancelTask
+      tags: [tasks]
+      summary: Cancel a task
+      parameters:
+        - $ref: "#/components/parameters/TaskId"
+      responses:
+        "200":
+          description: Cancelled task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List projects
+      responses:
+        "200":
+          description: Projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get project details
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+  /memory:
+    get:
+      operationId: listMemories
+      tags: [memory]
+      summary: List remembered items
+      responses:
+        "200":
+          description: Memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Memory"
+    post:
+      operationId: createMemory
+      tags: [memory]
+      summary: Save a memory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryInput"
+      responses:
+        "201":
+          description: Created memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+  /memory/{memoryId}:
+    patch:
+      operationId: updateMemory
+      tags: [memory]
+      summary: Edit a memory
+      parameters:
+        - $ref: "#/components/parameters/MemoryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryUpdate"
+      responses:
+        "200":
+          description: Updated memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+    delete:
+      operationId: deleteMemory
+      tags: [memory]
+      summary: Delete a memory
+      parameters:
+        - $ref: "#/components/parameters/MemoryId"
+      responses:
+        "204":
+          description: Deleted
+  /tools:
+    get:
+      operationId: listTools
+      tags: [tools]
+      summary: List available modular tools
+      responses:
+        "200":
+          description: Tools
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tool"
+  /themes:
+    get:
+      operationId: listThemes
+      tags: [themes]
+      summary: List user themes
+      responses:
+        "200":
+          description: Themes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Theme"
+    post:
+      operationId: createTheme
+      tags: [themes]
+      summary: Create a theme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThemeInput"
+      responses:
+        "201":
+          description: Created theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+  /themes/{themeId}:
+    patch:
+      operationId: updateTheme
+      tags: [themes]
+      summary: Edit a theme
+      parameters:
+        - $ref: "#/components/parameters/ThemeId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ThemeUpdate"
+      responses:
+        "200":
+          description: Updated theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+    delete:
+      operationId: deleteTheme
+      tags: [themes]
+      summary: Delete a theme
+      parameters:
+        - $ref: "#/components/parameters/ThemeId"
+      responses:
+        "204":
+          description: Deleted
+  /themes/{themeId}/apply:
+    post:
+      operationId: applyTheme
+      tags: [themes]
+      summary: Apply a theme
+      parameters:
+        - $ref: "#/components/parameters/ThemeId"
+      responses:
+        "200":
+          description: Applied theme
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Theme"
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get user settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update user settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
 components:
+  parameters:
+    ConversationId:
+      name: conversationId
+      in: path
+      required: true
+      schema: { type: number }
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema: { type: number }
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: number }
+    MemoryId:
+      name: memoryId
+      in: path
+      required: true
+      schema: { type: number }
+    ThemeId:
+      name: themeId
+      in: path
+      required: true
+      schema: { type: number }
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
-
+        status: { type: string }
+    Dashboard:
+      type: object
+      required: [greeting, stats, currentTask, recentActivity]
+      properties:
+        greeting: { type: string }
+        stats:
+          type: object
+          required: [tasks, projects, memories, tools]
+          properties:
+            tasks: { type: number }
+            projects: { type: number }
+            memories: { type: number }
+            tools: { type: number }
+        currentTask:
+          anyOf:
+            - $ref: "#/components/schemas/Task"
+            - type: "null"
+        recentActivity:
+          type: array
+          items: { type: string }
+    Conversation:
+      type: object
+      required: [id, title, createdAt, updatedAt]
+      properties:
+        id: { type: number }
+        title: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    ConversationInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+    Message:
+      type: object
+      required: [id, role, content, createdAt]
+      properties:
+        id: { type: number }
+        role: { type: string, enum: [user, assistant, system] }
+        content: { type: string }
+        createdAt: { type: string }
+    MessageInput:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string, minLength: 1 }
+        attachmentName: { type: ["string", "null"] }
+    MessagePair:
+      type: object
+      required: [user, assistant]
+      properties:
+        user: { $ref: "#/components/schemas/Message" }
+        assistant: { $ref: "#/components/schemas/Message" }
+    Task:
+      type: object
+      required: [id, title, description, status, progress, steps, currentStep, errors, priority, createdAt, updatedAt]
+      properties:
+        id: { type: number }
+        title: { type: string }
+        description: { type: string }
+        status: { type: string, enum: [New, Planning, "In Progress", Waiting, Completed, Failed, Cancelled] }
+        progress: { type: number, minimum: 0, maximum: 100 }
+        steps:
+          type: array
+          items: { type: string }
+        currentStep: { type: number }
+        errors:
+          type: array
+          items: { type: string }
+        priority: { type: string, enum: [Low, Medium, High] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    TaskInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1 }
+        description: { type: string }
+        priority: { type: string, enum: [Low, Medium, High] }
+    TaskUpdate:
+      type: object
+      properties:
+        status: { type: string, enum: [New, Planning, "In Progress", Waiting, Completed, Failed, Cancelled] }
+        progress: { type: number, minimum: 0, maximum: 100 }
+        currentStep: { type: number, minimum: 0 }
+        error: { type: string }
+    Project:
+      type: object
+      required: [id, name, description, progress, buildStatus, files, taskCount, errors, lastActivity, createdAt]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        description: { type: string }
+        progress: { type: number }
+        buildStatus: { type: string, enum: [Ready, Building, Failed, "Not started"] }
+        files:
+          type: array
+          items: { type: string }
+        taskCount: { type: number }
+        errors:
+          type: array
+          items: { type: string }
+        lastActivity: { type: string }
+        createdAt: { type: string }
+    ProjectInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: string }
+    Memory:
+      type: object
+      required: [id, content, category, enabled, createdAt, updatedAt]
+      properties:
+        id: { type: number }
+        content: { type: string }
+        category: { type: string }
+        enabled: { type: boolean }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    MemoryInput:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string, minLength: 1 }
+        category: { type: string }
+    MemoryUpdate:
+      type: object
+      properties:
+        content: { type: string, minLength: 1 }
+        category: { type: string }
+        enabled: { type: boolean }
+    Tool:
+      type: object
+      required: [id, name, description, category, status, requiresPermission]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        status: { type: string, enum: [Ready, "Needs setup", Disabled] }
+        requiresPermission: { type: boolean }
+    Theme:
+      type: object
+      required: [id, name, mode, isApplied, tokens, createdAt, updatedAt]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        mode: { type: string, enum: [light, dark, system, custom] }
+        isApplied: { type: boolean }
+        tokens:
+          type: object
+          additionalProperties: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+    ThemeInput:
+      type: object
+      required: [name, mode, tokens]
+      properties:
+        name: { type: string, minLength: 1 }
+        mode: { type: string, enum: [light, dark, system, custom] }
+        tokens:
+          type: object
+          additionalProperties: { type: string }
+    ThemeUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        mode: { type: string, enum: [light, dark, system, custom] }
+        tokens:
+          type: object
+          additionalProperties: { type: string }
+        isApplied: { type: boolean }
+    Settings:
+      type: object
+      required: [language, themeMode, memoryEnabled, voiceEnabled, notificationsEnabled, fontScale, density]
+      properties:
+        language: { type: string }
+        themeMode: { type: string }
+        memoryEnabled: { type: boolean }
+        voiceEnabled: { type: boolean }
+        notificationsEnabled: { type: boolean }
+        fontScale: { type: number }
+        density: { type: string }
+    SettingsUpdate:
+      type: object
+      properties:
+        language: { type: string }
+        themeMode: { type: string }
+        memoryEnabled: { type: boolean }
+        voiceEnabled: { type: boolean }
+        notificationsEnabled: { type: boolean }
+        fontScale: { type: number }
+        density: { type: string }

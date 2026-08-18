@@ -6,6 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface Memory {
+  id: number;
+  content: string;
+  category: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
